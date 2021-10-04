@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - chat</title>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css'><link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div class=login>
+  <p>Discord Project</p>
+   <input class=reg type="text" id="logemail" placeholder="Email"/> <br><br>
+  <input class=reg type="password" id="logpass" placeholder="Password"/> <br><br>
+  <button class=reg type="button" id="login">Click Here To Login</button><br>
+  <button class=reg id=regButton>Register</button>
+</div>
+
+<div class="register">
+  <p>Register</p>
+  <input class=reg type="text" id="regemail" placeholder="Register Email"/> <br><br>
+  <input class=reg type="password" id="regpass1" placeholder="Register Password"/> <br><br>
+  <input class=reg type="password" id="regpass2" placeholder="Confirm Password"/> <br><br>
+  <button class=reg type="button" id="register">Click Here To Register</button>
+</div>
+
+<div>
+  <div class=panel>Side panel <br>
+  <p id='app' class=panel></p>
+  </div>
+  
+  <div class=background>
+  <ul id=chats></ul> <br>
+  <input id=display type="text" placeholder='Enter Display Name'>
+  <input id=msg type="text" placeholder='Enter Message'> <br>
+  <button id=sub >Submit</button>
+ </div>
+  
+  <div class=users>
+    <span class=userspan>Users</span> <br>
+    <ul id=users></ul>
+  </div>
+  </div>
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script><script type="module" src="./script.js"></script>
+
+</body>
+</html>
