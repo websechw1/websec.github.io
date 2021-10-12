@@ -85,3 +85,31 @@ button:hover {
 .userspan {
   margin-left: 30px;
 }
+.del {
+    background:none;
+    border:none;
+    margin:0;
+    padding:0;
+    cursor: pointer;
+  padding-right: 10px;
+}
+.del:hover{
+  background: none;
+  color: red;
+}
+.edit {
+    background:none;
+    border:none;
+    margin:0;
+    padding:0;
+    cursor: pointer;
+  padding-right: 10px;
+}
+.edit:hover{
+  background: none;
+  color: blue;
+}
+
+.editInput {
+  display: none;
+}
