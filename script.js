@@ -36,91 +36,19 @@ let displayname = document.getElementById('display')
 let auth = fbauth.getAuth(app);
 let useremail = ''
 let userId = ''
-
-rtdb.onValue(titleRef, ss=>{
-  let val = ss.val()
-  let checkUser = rtdb.ref(db, `/users/${userId}/roles`)
-  chats.innerHTML = ''
-  rtdb.onValue(checkUser, ss => {
-    let role = ss.val();
-    if (role.admin == true) {
-      for (let chat in val) {
-        $("#chats").append(`<li>${val[chat].user}: ${val[chat].msg} <button class='del' data-id=${chat}>Delete Message</button> <button class='edit' data-id=${chat}>Edit Message</button></li>`);
-      }
-    }
-    else {
-      for (let chat in val) {
-        if (useremail == val[chat].user) {
-          $("#chats").append(`<li>${val[chat].user}: ${val[chat].msg} <button class='del' data-id=${chat}>Delete Message</button> <button class='edit' data-id=${chat}>Edit Message</button></li>`);
-        }
-        else {
-          $("#chats").append(`<li>${val[chat].user}: ${val[chat].msg}</li>`);
-        }
-      }
-    }
-    $(".del").click(function () {
-      let chatId = $(this).attr('data-id')
-      let chatRef = rtdb.ref(db, `/chats/${chatId}`)
-      rtdb.remove(chatRef)
-})
-    $(".edit").click(function () {
-      let chatId = $(this).attr('data-id')
-      let chatRef = rtdb.ref(db, `/chats/${chatId}`)
-      rtdb.update(chatRef, {
-      msg: msg.value
-    })
-})
-  })
-  rtdb.onValue(usersRef, ss=>{
-  let val = ss.val()
-  users.innerHTML = ''
-  for (let uid in val) {
-    let user = document.createElement('li');
-    users.appendChild(user)
-    user.innerText = val[uid].email
-  }
-  })
-});
+let uid = ''
 
 let sendMsg = () => {
-  let display = displayname.value
-  if (display) {
+  let displayRef = rtdb.ref(db, `/users/${userId}/`)
+  rtdb.onValue(displayRef, ss => {
     rtdb.push(titleRef, {
       msg: msg.value,
-      user: display
+      user: ss.val().displayName
     })
     msg.value = ''
-  }
-  else if (!display) {
-    rtdb.push(titleRef, {
-      msg: msg.value,
-      user: useremail
-    })
-    msg.value = ''
-  }
-  else {
-    alert('login')
-  }
+})
 }
-$("#register").on("click", ()=>{
-  let email = $("#regemail").val();
-  let p1 = $("#regpass1").val();
-  let p2 = $("#regpass2").val();
-  if (p1 != p2){
-    alert("Passwords don't match");
-    return;
-  }
-  fbauth.createUserWithEmailAndPassword(auth, email, p1).then(somedata=>{
-    let uid = somedata.user.uid;
-    let userRoleRef = rtdb.ref(db, `/users/${uid}/roles/user`);
-    let emailRef = rtdb.ref(db, `/users/${uid}/email`)
-    rtdb.set(userRoleRef, true);
-    rtdb.set(emailRef, email);
-  }).catch(function(error) {
-    var errorMessage = error.message;
-    alert(errorMessage);
-  });
-});
+
 $("#login").on("click", ()=>{
   let email = $("#logemail").val();
   let pwd = $("#logpass").val();
@@ -149,6 +77,55 @@ fbauth.onAuthStateChanged(auth, user => {
         useremail = user.email;
         userId = user.uid
         renderUser(user);
+        rtdb.onValue(titleRef, ss=>{
+        let val = ss.val()
+        let checkUser = rtdb.ref(db, `/users/${userId}/roles`)
+        chats.innerHTML = ''
+        rtdb.onValue(checkUser, ss => {
+          let role = ss.val();
+          if (role.admin == true) {
+            for (let chat in val) {
+              $("#chats").append(`<li><button class='del' data-id=${chat}> X</button><button id='edit' class='edit' data-id=${chat} data-message=${val[chat].msg}>Edit</button> ${val[chat].user}: ${val[chat].msg}</li>`);
+              }
+          }
+          else {
+            let check = rtdb.ref(db, `/users/${userId}/`)
+            for (let chat in val) {
+              rtdb.onValue(check, ss => {
+              if (ss.val().displayName == val[chat].user) {
+                $("#chats").append(`<li><button class='del' data-id=${chat}>X</button> <button id='edit' class='edit' data-id=${chat} data-message=${val[chat].msg}>Edit</button> ${val[chat].user}: ${val[chat].msg}</li>`);
+              }
+              else {
+                $("#chats").append(`<li>${val[chat].user}: ${val[chat].msg}</li>`);
+              }
+                })
+            }
+          }
+          $(".del").click(function () {
+            let chatId = $(this).attr('data-id')
+            let chatRef = rtdb.ref(db, `/chats/${chatId}`)
+            rtdb.remove(chatRef)
+      })
+          $(".edit").click(function () {
+            let chatId = $(this).attr('data-id')
+            let message = $(this).attr('data-message')
+            //$('#msg').val(message)
+            let chatRef = rtdb.ref(db, `/chats/${chatId}`)
+            rtdb.update(chatRef, {
+            msg: msg.value
+          })
+      })
+        })
+        rtdb.onValue(usersRef, ss=>{
+        let val = ss.val()
+        users.innerHTML = ''
+        for (let uid in val) {
+          let user = document.createElement('li');
+          users.appendChild(user)
+          user.innerText = val[uid].email
+        }
+        })
+      });
       } else {
         $(".login").show();
         $(".register").hide()
@@ -156,6 +133,28 @@ fbauth.onAuthStateChanged(auth, user => {
         $(".panel").hide();
         $(".users").hide();
         $("#app").html("");
+        $("#register").on("click", ()=>{
+        let email = $("#regemail").val();
+        let p1 = $("#regpass1").val();
+        let p2 = $("#regpass2").val();
+        let display = $("#display").val();
+        if (p1 != p2){
+          alert("Passwords don't match");
+          return;
+        }
+        fbauth.createUserWithEmailAndPassword(auth, email, p1).then(somedata=>{
+          uid = somedata.user.uid;
+          let userRoleRef = rtdb.ref(db, `/users/${uid}/roles/user`);
+          let emailRef = rtdb.ref(db, `/users/${uid}/email`)
+          let displayRef = rtdb.ref(db, `/users/${uid}/displayName`)
+          rtdb.set(userRoleRef, true);
+          rtdb.set(emailRef, email);
+          rtdb.set(displayRef, display);
+        }).catch(function(error) {
+          var errorMessage = error.message;
+          alert(errorMessage);
+        });
+      });
       }
 });
 
